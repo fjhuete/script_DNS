@@ -64,6 +64,10 @@ while getopts "iohv" opcion; do
 	esac
 done
 
-if [ $OPTIND -eq 1 ]; then #Esto hay que arreglarlo
-	echo -e $rojo"$0 requiere un argumento."$fin_formato >&2; mostrar_ayuda; exit 1
-fi
+#Validar si se ha pasado, al menos, un argumento al script
+validar_argumento() {
+	if [ "$#" -eq 0 ]; then
+		echo "Faltan argumentos"
+		exit 1
+	fi
+}
