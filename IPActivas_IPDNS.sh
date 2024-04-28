@@ -51,9 +51,8 @@ echo "$0 Versión: 1.0"
 exit 0
 }
 
-#Zona del script
-
 #Control de argumentos
+argumentos() {
 while getopts "iohv" opcion; do
 	case $opcion in
 		i) leer_fichero ;;
@@ -63,6 +62,7 @@ while getopts "iohv" opcion; do
 		?) mostrar_ayuda; exit 1
 	esac
 done
+}
 
 #Validar si se ha pasado, al menos, un argumento al script
 validar_argumento() {
@@ -71,3 +71,35 @@ validar_argumento() {
 		exit 1
 	fi
 }
+
+#Comprobar si está instalado el paquete nmap
+nmap_instalado () {
+	local paquete="nmap"
+	if dpkg -l | grep -q "^ii\s*$paquete\s"; then
+		return 0
+	else
+		return 1
+}
+
+
+#Leer del fichero
+leer_fichero () {
+	fichero=$1
+	for i in $(cat $fichero)
+	do
+		$(nmap -ns $i)
+	done
+}
+
+
+#Zona del script
+argumentos()
+validar_argumento()
+if nmap_instalado () = 1
+then
+	#Comprobar si hay conexión a Internet, si es root e instalar paquete.
+fi
+	
+
+
+
