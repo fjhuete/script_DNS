@@ -1,3 +1,4 @@
+#! /usr/bin/env bash
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
 #Descripción:
 #Versión: 1.0
@@ -34,6 +35,8 @@ invertido="\e[1;7m"
 
 fin_formato="\e[0m"
 
+
+
 #Zona de declaración de funciones
 
 mostrar_ayuda() {
@@ -51,34 +54,15 @@ echo "$0 Versión: 1.0"
 exit 0
 }
 
-#Control de argumentos
-argumentos() {
-while getopts "iohv" opcion; do
-	case $opcion in
-		i) leer_fichero ;;
-		o) escribir_fichero ;;
-		h) mostrar_ayuda; exit 0;;
-		v) mostrar_version ;;
-		?) mostrar_ayuda; exit 1
-	esac
-done
-}
-
-#Validar si se ha pasado, al menos, un argumento al script
-validar_argumento() {
-	if [ "$#" -eq 0 ]; then
-		echo "Faltan argumentos"
-		exit 1
-	fi
-}
-
 #Comprobar si está instalado el paquete nmap
 nmap_instalado () {
+	resultado_instalado=0
 	local paquete="nmap"
 	if dpkg -l | grep -q "^ii\s*$paquete\s"; then
-		return 0
+		resultado_instalado=0
 	else
-		return 1
+		resultado_instalado=1
+	fi
 }
 
 
@@ -91,14 +75,85 @@ leer_fichero () {
 	done
 }
 
+#conexion con debian.org para instalar nmap
+ping_debian () {
+	resultado_ping=0
+	if ping -c 1 151.101.130.132; then
+		resultado_ping=0
+	elif ping -c 1 151.101.2.132; then
+		resultado_ping=0
+	elif ping -c 1 151.101.66.132; then
+		resultado_ping=0
+	elif ping -c 1 151.101.194.132; then
+		resultado_ping=0
+	else
+		resultado_ping=1
+	fi
+}
+
+#Comprobar si soy root para instalar nmap
+comprobar_root () {
+	root=0
+	if [ $(whoami) = 'root' ]; then
+		root=0
+	else
+		root=1
+	fi
+}
+
+#instalar nmap
+instalar_nmap () {
+	apt install nmap
+}
 
 #Zona del script
-argumentos()
-validar_argumento()
-if nmap_instalado () = 1
+
+#funciones
+while getopts "iohv" opcion; do
+	case $opcion in
+		i) leer_fichero ;;
+		o) escribir_fichero ;;
+		h) mostrar_ayuda; exit 0;;
+		v) mostrar_version ;;
+		?) mostrar_ayuda; exit 1
+	esac
+done
+
+#validar_argumento
+	if [ "$#" -eq 0 ]; then
+		echo "Faltan argumentos"
+		exit 1
+	fi
+
+
+nmap_instalado
+if [ $resultado_instalado=1 ]
 then
 	#Comprobar si hay conexión a Internet, si es root e instalar paquete.
+	ping_debian
+	if 	[ $resultado_ping=0 ]; then
+		echo 'Hay conexión con los repositorios de debian'
+		
+		#Comprueba que eres root de ser asi instala nmap
+		comprobar_root
+		if [ $root = 0 ]; then
+			echo "$root"		
+			echo 'Tienes privilegios para instalar nmap'
+			instalar_nmap
+		else
+			echo 'debes de ser root'
+		fi
+	
+	else
+		echo 'No hay conexión con los repositorios de debian'
+	fi
+
+else
+ echo 'Nmap instalado'
+	
 fi
+
+
 	
 
 
