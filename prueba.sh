@@ -5,7 +5,7 @@ comprobar_root () {
         echo 'Tienes privilegios para instalar nmap'
 		return 0
 	else
-        echo 'debes de ser root'
+        echo ' [ERROR] - Debes de ser root'
 		exit 1
 	fi
 }
