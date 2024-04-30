@@ -35,6 +35,11 @@ invertido="\e[1;7m"
 
 fin_formato="\e[0m"
 
+#Expresión regular para identificar si una cadena de caracteres es una IP
+regexp_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)/?$"
 
 
 #Zona de declaración de funciones
@@ -59,7 +64,6 @@ nmap_instalado () {
 	echo 'Comprobando si el paquete nmap está instalado.'
 	local paquete="nmap"
 	if dpkg -l | grep -q "^ii\s*$paquete\s"; then
-		echo 'nmap está instalado.'
 		return 0
 	else
 		echo 'nmap no está instalado. Se procederá a su instalación.'
@@ -67,26 +71,16 @@ nmap_instalado () {
 	fi
 }
 
-
-#Leer del fichero
-leer_fichero () {
-	fichero=$1
-	for i in $(cat $fichero)
-	do
-		$(nmap -ns $i)
-	done
-}
-
 #conexion con debian.org para instalar nmap
 ping_debian () {
 	echo 'Comprobando conexión a los repositorios Debian.'
-	if ping -c 1 151.101.130.132; then
+	if ping -c 1 -W 1 151.101.130.132 &> /dev/null; then
 		return 0
-	elif ping -c 1 151.101.2.132; then
+	elif ping -c 1 -W 1 151.101.2.132 &> /dev/null; then
 		return 0
-	elif ping -c 1 151.101.66.132; then
+	elif ping -c 1 -W 1 151.101.66.132 &> /dev/null; then
 		return 0
-	elif ping -c 1 151.101.194.132; then
+	elif ping -c 1 -W 1 151.101.194.132 &> /dev/null; then
 		return 0
 	else
 		echo '[ERROR] - No tienes conexión a los repositorios de Debian.'
@@ -108,7 +102,64 @@ comprobar_root () {
 #instalar nmap
 instalar_nmap () {
 	echo 'Instalando nmap.'
-	apt install nmap
+	apt install -y nmap
+}
+
+#Función que valida si nmpa está instalado y, si no lo está, lo instala.
+validar_nmap () {
+	nmap_instalado
+	if [ "$?" -eq 1 ]
+	then
+		#Comprobar si hay conexión a los repositorios de Debian
+		ping_debian
+		if 	[ "$?" -eq 0 ]; then
+			
+			#Comprueba que eres root de ser asi instala nmap
+			comprobar_root
+			instalar_nmap
+		fi
+	fi
+}
+
+#Leer una dirección IP pasada como argumento
+leer_direccion () {
+	ip=$1
+	echo $(nmap -ns $ip)
+}
+
+#Leer del fichero
+leer_fichero () {
+	#Valida si el fichero existe
+	if [ ! -f "$1" ]; then
+	    echo "[ERROR] - El archivo '$1' no existe."
+	    exit 1
+	else
+		fichero=$1
+		for i in $(cat $fichero)
+		do
+			echo $(nmap -ns $i)
+		done
+	fi
+}
+
+#Escribir a fichero
+escribir_fichero () {
+	entrada=$2
+	salida=$4
+	#Comprueba si existe el fichero de salida
+	if [ ! -f "$salida" ]
+		echo "[ERROR] - El archivo '$salida' no existe."
+	  exit 1
+	fi
+	#Comprueba si existe el fichero de entrada
+	if [ -f "$entrada" ]; then
+		#Si existe, lee del fichero de entrada y escribe en el fichero de salida
+		echo leer_fichero $entrada > $salida
+	else
+		#Si no existe, lee la dirección IP aportada como argumento y escribe en el fichero de salida
+		echo leer_direccion $entrada > $salida
+	fi
+
 }
 
 #Zona del script
@@ -116,11 +167,12 @@ instalar_nmap () {
 #Opciones
 while getopts "iohv" opcion; do
 	case $opcion in
-		i) leer_fichero ;;
-		o) escribir_fichero ;;
+		i) validar_nmap; leer_fichero $2; exit 0 ;;
+		o) validar_nmap; escribir_fichero $@ ;;
 		h) mostrar_ayuda; exit 0;;
 		v) mostrar_version ;;
-		?) mostrar_ayuda; exit 1
+		$regexp_ip) validar_nmap; leer_direccion $1; exit 0 ;;
+		?) mostrar_ayuda; exit 1 ;;
 	esac
 done
 
@@ -132,19 +184,6 @@ if [ "$#" -eq 0 ]; then
 fi
 
 
-#Comprobar si el paquete nmap está instalado
-nmap_instalado
-if [ "$?" -eq 1 ]
-then
-	#Comprobar si hay conexión a los repositorios de Debian
-	ping_debian
-	if 	[ "$?" -eq 0 ]; then
-		
-		#Comprueba que eres root de ser asi instala nmap
-		comprobar_root
-		instalar_nmap
-	fi
-fi
 
 
 	
