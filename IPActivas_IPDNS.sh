@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
-#Descripción:
+#Descripción: Recibe un rango de direcciones IP y lista las que están activas y las que están en el DNS.
 #Versión: 1.0
 #Fecha:
 #Zona de depuración
@@ -75,12 +75,16 @@ nmap_instalado () {
 ping_debian () {
 	echo 'Comprobando conexión a los repositorios Debian.'
 	if ping -c 1 -W 1 151.101.130.132 &> /dev/null; then
+		echo 'Conexión exitosa a los repositorios.'
 		return 0
 	elif ping -c 1 -W 1 151.101.2.132 &> /dev/null; then
+		echo 'Conexión exitosa a los repositorios.'
 		return 0
 	elif ping -c 1 -W 1 151.101.66.132 &> /dev/null; then
+		echo 'Conexión exitosa a los repositorios.'
 		return 0
 	elif ping -c 1 -W 1 151.101.194.132 &> /dev/null; then
+		echo 'Conexión exitosa a los repositorios.'
 		return 0
 	else
 		echo '[ERROR] - No tienes conexión a los repositorios de Debian.'
@@ -90,6 +94,7 @@ ping_debian () {
 
 #Comprobar si soy root para instalar nmap
 comprobar_root () {
+	echo 'Comprobando privilegios del usuario.'
 	if [ $(whoami) = 'root' ]; then
 		return 0
 	else
@@ -147,7 +152,7 @@ escribir_fichero () {
 	entrada=$2
 	salida=$4
 	#Comprueba si existe el fichero de salida
-	if [ ! -f "$salida" ]
+	if [ ! -f "$salida" ]; then
 		echo "[ERROR] - El archivo '$salida' no existe."
 	  exit 1
 	fi
