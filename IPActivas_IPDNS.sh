@@ -142,27 +142,35 @@ leer_fichero () {
 		fichero=$1
 		for i in $(cat $fichero)
 		do
-			echo $(nmap -ns $i)
+			$(nmap -sn $i | grep "Host seems down") &> /dev/null
+			if [ "$?" -eq 127 ]; then
+				echo "$i: Disponible "
+			else
+				echo "$i: No disponible"
+			fi
 		done
 	fi
 }
 
+
+
 #Escribir a fichero
 escribir_fichero () {
 	entrada=$2
-	salida=$4
+	salida=$3
 	#Comprueba si existe el fichero de salida
 	if [ ! -f "$salida" ]; then
-		echo "[ERROR] - El archivo '$salida' no existe."
-	  exit 1
+		touch $3
+		echo "CREANDO FICHERO"
+		#echo "[ERROR] - El archivo '$salida' no existe."
 	fi
 	#Comprueba si existe el fichero de entrada
 	if [ -f "$entrada" ]; then
 		#Si existe, lee del fichero de entrada y escribe en el fichero de salida
-		echo leer_fichero $entrada > $salida
+		leer_fichero $entrada > $salida
 	else
 		#Si no existe, lee la dirección IP aportada como argumento y escribe en el fichero de salida
-		echo leer_direccion $entrada > $salida
+		leer_direccion $entrada > $salida
 	fi
 
 }
@@ -172,10 +180,10 @@ escribir_fichero () {
 #Opciones
 while getopts "iohv" opcion; do
 	case $opcion in
+		o) validar_nmap; escribir_fichero $@; exit 0 ;;
 		i) validar_nmap; leer_fichero $2; exit 0 ;;
-		o) validar_nmap; escribir_fichero $@ ;;
 		h) mostrar_ayuda; exit 0;;
-		v) mostrar_version ;;
+		v) mostrar_version; exit 0 ;;
 		$regexp_ip) validar_nmap; leer_direccion $1; exit 0 ;;
 		?) mostrar_ayuda; exit 1 ;;
 	esac
