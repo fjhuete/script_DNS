@@ -36,10 +36,10 @@ invertido="\e[1;7m"
 fin_formato="\e[0m"
 
 #Expresión regular para identificar si una cadena de caracteres es una IP
-regexp_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\.( 
-			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\.( 
-			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\.( 
-			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)/?$"
+regexp_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$"
 
 #Expresión regular para identificar redes
 regexp_red_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
@@ -51,7 +51,7 @@ regexp_red_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\.
 regexp_red_hexadecimal="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
     (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
     (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
-    (0) (255|254|252|248|240|224|192|128|0)\. 
+    (0)\ (255|254|252|248|240|224|192|128|0)\. 
     (255|254|252|248|240|224|192|128|0)\. 
     (255|254|252|248|240|224|192|128|0)\. 
     (255|254|252|248|240|224|192|128|0)$"
@@ -199,6 +199,8 @@ while getopts "iohv" opcion; do
 		h) mostrar_ayuda; exit 0;;
 		v) mostrar_version; exit 0 ;;
 		$regexp_ip) validar_nmap; leer_direccion $1; exit 0 ;;
+		$regex_ip_red) validar_nmap; leer_direccion $1; exit 0;;
+		$regexp_red_hexadecimal) validar_nmap; leer_direccion $1; exit 0;;
 		?) mostrar_ayuda; exit 1 ;;
 	esac
 done
