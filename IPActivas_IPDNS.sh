@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /usr/bin/env sh
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
 #Descripción: Recibe un rango de direcciones IP y lista las que están activas y las que están en el DNS.
 #Versión: 1.0
@@ -65,7 +65,8 @@ Parámetros aceptados:
 	-i <FICHERO>	Lee las direcciones IP de un fichero. Si no se indica, toma como dirección IP el primer argumento.
 	-o <FICHERO>	Escribe la salida a un fichero. Si no se indica, muestra el resultado por la salida estándar.
 	-h 		Muestra esta ayuda.
-	-v 		Muestra la versión."
+	-v 		Muestra la versión.
+Este script se ejecuta en una subshell"
 }
 
 mostrar_version() {
@@ -118,9 +119,11 @@ comprobar_root () {
 }
 
 
+
 #instalar nmap
 instalar_nmap () {
 	echo 'Instalando nmap.'
+	apt update && apt upgrade -y
 	apt install -y nmap
 }
 
@@ -143,7 +146,7 @@ validar_nmap () {
 #Leer una dirección IP pasada como argumento
 leer_direccion () {
 	ip=$1
-	echo $(nmap -ns $ip)
+	echo $(nmap -sn $ip)
 }
 
 #Leer del fichero
@@ -157,6 +160,8 @@ leer_fichero () {
 		for i in $(cat $fichero)
 		do
 			$(nmap -sn $i | grep "Host seems down") &> /dev/null
+			#-q para grep silencioso
+			#-nq 0 
 			if [ "$?" -eq 127 ]; then
 				echo "$i: Disponible "
 			else
