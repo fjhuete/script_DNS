@@ -47,7 +47,7 @@ regexp_red_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\.
     (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
     (0)\/(3[0-1]|[1-2]?\d)$"
 
-#Expresión regular para identificar redes en hexadecimal
+#Expresión regular para identificar redes en decimal puntuada
 regexp_red_hexadecimal="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
     (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
     (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
