@@ -5,7 +5,7 @@
 #Fecha:
 #Zona de depuración
         #Inicio de la zona de depuración con set -x (descomentar para activar)
-#set -x
+set -x
         #Advertencia de falta de variable (descomentar para activar)
  #set -u
 #Zona de declaración de variables
@@ -59,10 +59,12 @@ regexp_red_hexadecimal="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\.
 #Zona de declaración de funciones
 
 mostrar_ayuda() {
-echo "Uso: $0 [IP | Dirección de red | -i FICHERO][-o FICHERO]
+echo "Uso: $0  [-a IP | -i FICHERO | -r FICHERO | -o [IP | FICHERO_ENTRADA] FICHERO_SALIDA]
 Descripción: Recibe un rango de direcciones IP y lista las que están activas y las que están en el DNS.
 Parámetros aceptados:
-	-i <FICHERO>	Lee las direcciones IP de un fichero. Si no se indica, toma como dirección IP el primer argumento.
+	-a 		Lee la dirección IP indicada como argumento y comprueba si está activa.
+	-i <FICHERO>	Lee las direcciones IP de un fichero.
+	-r 		Lee la dirección de red indicada como argumento y lista las direcciones de la red que están activas.
 	-o <FICHERO>	Escribe la salida a un fichero. Si no se indica, muestra el resultado por la salida estándar.
 	-h 		Muestra esta ayuda.
 	-v 		Muestra la versión.
@@ -135,7 +137,6 @@ validar_nmap () {
 		#Comprobar si hay conexión a los repositorios de Debian
 		ping_debian
 		if 	[ "$?" -eq 0 ]; then
-			
 			#Comprueba que eres root de ser asi instala nmap
 			comprobar_root
 			instalar_nmap
@@ -152,26 +153,29 @@ leer_direccion () {
 #Leer del fichero
 leer_fichero () {
 	#Valida si el fichero existe
-	if [ ! -f "$1" ]; then
-	    echo "[ERROR] - El archivo '$1' no existe."
+	if [ ! -f "$1" ] || [ ! -s "$1" ]; then
+	    echo "[ERROR] - El archivo '$1' no existe o está vacío."
 	    exit 1
 	else
 		fichero=$1
+		#Lee cada línea del fichero
 		for i in $(cat $fichero)
 		do
-			$(nmap -sn $i | grep "Host seems down") &> /dev/null
-			#-q para grep silencioso
-			#-nq 0 
-			if [ "$?" -eq 127 ]; then
-				echo "$i: Disponible "
+			#Valida si la IP tiene un formato correcto
+			if [[ $i =~ $regexp_ip ]]; then
+				$(nmap -sn $i | grep -q "Host seems down")
+				if [ "$?" -ne 0 ]; then
+					echo "$i: Disponible "
+				else
+					echo "$i: No disponible"
+				fi
 			else
-				echo "$i: No disponible"
+				echo "[ERROR] - El fichero contiene una IP no válida: $i"
+				exit 1
 			fi
 		done
 	fi
 }
-
-
 
 #Escribir a fichero
 escribir_fichero () {
@@ -180,8 +184,7 @@ escribir_fichero () {
 	#Comprueba si existe el fichero de salida
 	if [ ! -f "$salida" ]; then
 		touch $3
-		echo "CREANDO FICHERO"
-		#echo "[ERROR] - El archivo '$salida' no existe."
+		echo "Creando fichero de salida"
 	fi
 	#Comprueba si existe el fichero de entrada
 	if [ -f "$entrada" ]; then
@@ -191,7 +194,6 @@ escribir_fichero () {
 		#Si no existe, lee la dirección IP aportada como argumento y escribe en el fichero de salida
 		leer_direccion $entrada > $salida
 	fi
-
 }
 
 #Zona del script
