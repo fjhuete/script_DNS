@@ -19,12 +19,12 @@ morado="\e[1;35m"
 cyan="\e[1;36m"
 
 #Color de fondo
-gris="\e[1;40m"
-verde="\e[1;42m"
-amarillo="\e[1;44m"
-azul="\e[1;44m"
-morado="\e[1;45m"
-cyan="\e[1;46m"
+fondogris="\e[1;40m"
+fondoverde="\e[1;42m"
+fondoamarillo="\e[1;44m"
+fondoazul="\e[1;44m"
+fondomorado="\e[1;45m"
+fondocyan="\e[1;46m"
 
 #Formato
 negrita="\e[1m"
@@ -42,19 +42,7 @@ regexp_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(
 			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$"
 
 #Expresión regular para identificar redes
-regexp_red_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
-    (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
-    (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
-    (0)\/(3[0-1]|[1-2]?\d)$"
-
-#Expresión regular para identificar redes en decimal puntuada
-regexp_red_hexadecimal="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
-    (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
-    (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][1-9]?)\. 
-    (0)\ (255|254|252|248|240|224|192|128|0)\. 
-    (255|254|252|248|240|224|192|128|0)\. 
-    (255|254|252|248|240|224|192|128|0)\. 
-    (255|254|252|248|240|224|192|128|0)$"
+regexp_red="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$"
 
 #Zona de declaración de funciones
 
@@ -78,7 +66,7 @@ mostrar_version() {
 
 #Comprobar si está instalado el paquete nmap
 nmap_instalado () {
-	echo 'Comprobando si el paquete nmap está instalado.'
+	echo -e "Comprobando si el paquete nmap está instalado$parpadeo.$fin_formato"
 	local paquete="nmap"
 	if dpkg -l | grep -q "^ii\s*$paquete\s"; then
 		return 0
@@ -104,7 +92,7 @@ ping_debian () {
 		echo 'Conexión exitosa a los repositorios.'
 		return 0
 	else
-		echo '[ERROR] - No tienes conexión a los repositorios de Debian.'
+		echo -e "$rojo$negrita[ERROR]$fin_formato - No tienes conexión a los repositorios de Debian."
 		exit 1
 	fi
 }
@@ -115,12 +103,10 @@ comprobar_root () {
 	if [ $(whoami) = 'root' ]; then
 		return 0
 	else
-        echo ' [ERROR] - Debes de ser root.'
+        echo -e "$rojo$negrita[ERROR]$fin_formato - Debes de ser root."
 		exit 1
 	fi
 }
-
-
 
 #instalar nmap
 instalar_nmap () {
@@ -140,65 +126,66 @@ validar_nmap () {
 			#Comprueba que eres root de ser asi instala nmap
 			comprobar_root
 			instalar_nmap
+			echo -e "$verde[OK]$fin_formato - nmap instalado"
 		fi
+	else
+		echo -e "$verde[OK]$fin_formato - nmap instalado"
 	fi
 }
 
 #Leer una dirección IP pasada como argumento
 leer_direccion () {
-	ip=$1
-	echo $(nmap -sn $ip)
-}
-
-#Leer del fichero
-leer_fichero () {
-	#Valida si el fichero existe
-	if [ ! -f "$1" ] || [ ! -s "$1" ]; then
-	    echo "[ERROR] - El archivo '$1' no existe o está vacío."
-	    exit 1
+	i=$1
+	#Valida si la IP tiene un formato correcto
+  if [[ $i =~ $regexp_ip ]] || [[ $i =~ $regexp_red ]]; then
+  	#Ejecuta nmap y guarda la salida del comando en un fichero temporal
+    nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
+    # Leer el fichero temporal campo a campo usando un bucle while
+    while IFS= read -r line; do
+    	# Extraer la dirección IP de la línea
+      ip=$(echo "$line" | awk '{print $5}')
+      # Comprobar si la línea contiene "host down"
+      if [[ "$line" == *"host down"* ]]; then
+      	echo "$ip: Disponible"
+      else
+        echo "$ip: No disponible"
+      fi
+    done <contenido_tmp.txt
 	else
-		fichero=$1
-		#Lee cada línea del fichero
-		for i in $(cat $fichero)
-		do
-			#Valida si la IP tiene un formato correcto
-			if [[ $i =~ $regexp_ip ]]; then
-				$(nmap -sn $i | grep -q "Host seems down")
-				if [ "$?" -ne 0 ]; then
-					echo "$i: Disponible "
-				else
-					echo "$i: No disponible"
-				fi
-			else
-				echo "[ERROR] - El fichero contiene una IP no válida: $i"
-				exit 1
-			fi
-		done
+    echo -e "$rojo$negrita[ERROR]$fin_formato - La dirección IP no es válida: $i"
 	fi
 }
 
 # Leer del fichero
-leer_fichero_red() {
+leer_fichero() {
     # Valida si el fichero existe
     if [ ! -f "$1" ]; then
-        echo "[ERROR] - El archivo '$1' no existe."
+        echo -e "$rojo$negrita[ERROR]$fin_formato - El archivo '$1' no existe."
         exit 1
     else
+    		echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
         fichero=$1
         touch contenido_tmp.txt
+     		#Lee cada línea del fichero
         for i in $(cat "$fichero"); do
+     			#Valida si la IP tiene un formato correcto
+        	if [[ $i =~ $regexp_ip ]] || [[ $i =~ $regexp_red ]]; then
+        		#Ejecuta nmap y guarda la salida del comando en un fichero temporal
             nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
-            # Leer el archivo línea por línea usando un bucle for
+            # Leer el fichero temporal campo a campo usando un bucle while
             while IFS= read -r line; do
                 # Extraer la dirección IP de la línea
                 ip=$(echo "$line" | awk '{print $5}')
                 # Comprobar si la línea contiene "host down"
                 if [[ "$line" == *"host down"* ]]; then
-                    echo "IP $ip disponible"
+                    echo "$ip: Disponible"
                 else
-                    echo "IP $ip no disponible"
+                    echo "$ip: No disponible"
                 fi
-            done <contenido_tmp.txt
+            	done <contenido_tmp.txt
+            else
+            	echo -e "$rojo$negrita[ERROR]$fin_formato - El fichero contiene una IP no válida: $i"
+            fi
         done
         # Eliminar el archivo temporal
         rm contenido_tmp.txt
@@ -227,23 +214,20 @@ escribir_fichero () {
 #Zona del script
 
 #Opciones
-while getopts "irohv" opcion; do
+while getopts "aiohv" opcion; do
 	case $opcion in
-		o) validar_nmap; escribir_fichero $@; exit 0 ;;
+		a) validar_nmap; leer_direccion $2; exit 0 ;;
 		i) validar_nmap; leer_fichero $2; exit 0 ;;
-		r) validar_nmap; leer_fichero_red $2; exit 0;;
+		o) validar_nmap; escribir_fichero $@; exit 0 ;;
 		h) mostrar_ayuda; exit 0;;
 		v) mostrar_version; exit 0 ;;
-		$regexp_ip) validar_nmap; leer_direccion $1; exit 0 ;;
-		$regex_ip_red) validar_nmap; leer_direccion $1; exit 0;;
-		$regexp_red_hexadecimal) validar_nmap; leer_direccion $1; exit 0;;
 		?) mostrar_ayuda; exit 1 ;;
 	esac
 done
 
 #Validar si se aportan argumentos al script
 if [ "$#" -eq 0 ]; then
-	echo '[ERROR] - Este comando requiere, al menos, un argumento.'
+	echo -e "$rojo$negrita[ERROR]$fin_formato - Este comando requiere, al menos, un argumento."
 	mostrar_ayuda
 	exit 1
 fi
