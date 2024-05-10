@@ -177,6 +177,35 @@ leer_fichero () {
 	fi
 }
 
+# Leer del fichero
+leer_fichero_red() {
+    # Valida si el fichero existe
+    if [ ! -f "$1" ]; then
+        echo "[ERROR] - El archivo '$1' no existe."
+        exit 1
+    else
+        fichero=$1
+        touch .contenido_tmp.txt
+        for i in $(cat "$fichero"); do
+			#Enviar el resultado filtrado
+            nmap -sn -v "$i" | grep "Nmap scan report for" &>>.contenido_tmp.txt
+            # Leer el archivo línea por línea
+            while IFS= read -r linea; do
+                # Extraer la dirección IP de la línea
+                ip=$(echo "$linea" | awk '{print $5}')
+                # Comprobar si la línea contiene "host down"
+                if [[ "$line" == *"host down"* ]]; then
+                    echo "IP $ip disponible"
+                else
+                    echo "IP $ip no disponible"
+                fi
+            done <.contenido_tmp.txt
+        done
+        # Eliminar el archivo temporal
+        rm .contenido_tmp.txt
+    fi
+}
+
 #Escribir a fichero
 escribir_fichero () {
 	entrada=$2
@@ -199,10 +228,11 @@ escribir_fichero () {
 #Zona del script
 
 #Opciones
-while getopts "iohv" opcion; do
+while getopts "irohv" opcion; do
 	case $opcion in
 		o) validar_nmap; escribir_fichero $@; exit 0 ;;
 		i) validar_nmap; leer_fichero $2; exit 0 ;;
+		r) validar_nmap; leer_fichero_red $2; exit 0;;
 		h) mostrar_ayuda; exit 0;;
 		v) mostrar_version; exit 0 ;;
 		$regexp_ip) validar_nmap; leer_direccion $1; exit 0 ;;
