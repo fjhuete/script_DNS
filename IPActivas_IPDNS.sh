@@ -5,7 +5,7 @@
 #Fecha:
 #Zona de depuración
         #Inicio de la zona de depuración con set -x (descomentar para activar)
-set -x
+#set -x
         #Advertencia de falta de variable (descomentar para activar)
  #set -u
 #Zona de declaración de variables
