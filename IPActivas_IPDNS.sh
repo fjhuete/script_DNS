@@ -133,63 +133,70 @@ validar_nmap () {
 	fi
 }
 
-#Leer una dirección IP pasada como argumento
-leer_direccion () {
+#Valida si la IP tiene un formato correcto
+validar_IP () {
 	i=$1
-	#Valida si la IP tiene un formato correcto
-  if [[ $i =~ $regexp_ip ]] || [[ $i =~ $regexp_red ]]; then
-  	#Ejecuta nmap y guarda la salida del comando en un fichero temporal
-    nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
-    # Leer el fichero temporal campo a campo usando un bucle while
-    while IFS= read -r line; do
-    	# Extraer la dirección IP de la línea
-      ip=$(echo "$line" | awk '{print $5}')
-      # Comprobar si la línea contiene "host down"
-      if [[ "$line" == *"host down"* ]]; then
-      	echo "$ip: Disponible"
-      else
-        echo "$ip: No disponible"
-      fi
-    done <contenido_tmp.txt
+	if [[ $i =~ $regexp_ip ]] || [[ $i =~ $regexp_red ]]; then
+		return 0
 	else
     echo -e "$rojo$negrita[ERROR]$fin_formato - La dirección IP no es válida: $i"
 	fi
 }
 
+#Leer una dirección IP pasada como argumento
+leer_direccion () {
+	i=$1
+	validar_IP $i
+  #Ejecuta nmap y guarda la salida del comando en un fichero temporal
+  nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
+  # Leer el fichero temporal campo a campo usando un bucle while
+  while IFS= read -r line; do
+   # Extraer la dirección IP de la línea
+    ip=$(echo "$line" | awk '{print $5}')
+    # Comprobar si la línea contiene "host down"
+    if [[ "$line" == *"host down"* ]]; then
+     	echo "$ip: Disponible"
+    else
+      echo "$ip: No disponible"
+    fi
+  done <contenido_tmp.txt
+}
+
+
+#Validar si existe un fichero
+validar_fichero() {
+	if [ ! -f "$1" ]; then
+		echo -e "$rojo$negrita[ERROR]$fin_formato - El archivo '$1' no existe."
+		exit 1
+	else
+		return 0
+}
+
 # Leer del fichero
 leer_fichero() {
-    # Valida si el fichero existe
-    if [ ! -f "$1" ]; then
-        echo -e "$rojo$negrita[ERROR]$fin_formato - El archivo '$1' no existe."
-        exit 1
-    else
-    		echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
-        fichero=$1
-        touch contenido_tmp.txt
-     		#Lee cada línea del fichero
-        for i in $(cat "$fichero"); do
-     			#Valida si la IP tiene un formato correcto
-        	if [[ $i =~ $regexp_ip ]] || [[ $i =~ $regexp_red ]]; then
-        		#Ejecuta nmap y guarda la salida del comando en un fichero temporal
-            nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
-            # Leer el fichero temporal campo a campo usando un bucle while
-            while IFS= read -r line; do
-                # Extraer la dirección IP de la línea
-                ip=$(echo "$line" | awk '{print $5}')
-                # Comprobar si la línea contiene "host down"
-                if [[ "$line" == *"host down"* ]]; then
-                    echo "$ip: Disponible"
-                else
-                    echo "$ip: No disponible"
-                fi
-            	done <contenido_tmp.txt
-            else
-            	echo -e "$rojo$negrita[ERROR]$fin_formato - El fichero contiene una IP no válida: $i"
-            fi
-        done
-        # Eliminar el archivo temporal
-        rm contenido_tmp.txt
-    fi
+	fichero=$1
+  validar_fichero $fichero
+	echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
+	touch contenido_tmp.txt
+	#Lee cada línea del fichero
+	for i in $(cat "$fichero"); do
+		validar_IP $i
+		#Ejecuta nmap y guarda la salida del comando en un fichero temporal
+		nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
+		# Leer el fichero temporal campo a campo usando un bucle while
+		while IFS= read -r line; do
+			# Extraer la dirección IP de la línea
+			ip=$(echo "$line" | awk '{print $5}')
+			# Comprobar si la línea contiene "host down"
+			if [[ "$line" == *"host down"* ]]; then
+				echo "$ip: Disponible"
+			else
+				echo "$ip: No disponible"
+			fi
+		done <contenido_tmp.txt
+	done
+			# Eliminar el archivo temporal
+			rm contenido_tmp.txt
 }
 
 #Escribir a fichero
@@ -198,15 +205,17 @@ escribir_fichero () {
 	salida=$3
 	#Comprueba si existe el fichero de salida
 	if [ ! -f "$salida" ]; then
-		touch $3
 		echo "Creando fichero de salida"
+		touch $3
 	fi
 	#Comprueba si existe el fichero de entrada
 	if [ -f "$entrada" ]; then
 		#Si existe, lee del fichero de entrada y escribe en el fichero de salida
+		echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
 		leer_fichero $entrada > $salida
 	else
 		#Si no existe, lee la dirección IP aportada como argumento y escribe en el fichero de salida
+		echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
 		leer_direccion $entrada > $salida
 	fi
 }
