@@ -47,15 +47,33 @@ regexp_red="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9]
 #Zona de declaración de funciones
 
 mostrar_ayuda() {
-echo "Uso: $0  [-a IP | -i FICHERO | -r FICHERO | -o [IP | FICHERO_ENTRADA] FICHERO_SALIDA]
-Descripción: Recibe un rango de direcciones IP y lista las que están activas y las que están en el DNS.
-Parámetros aceptados:
-	-a 		Lee la dirección IP indicada como argumento y comprueba si está activa.
-	-i <FICHERO>	Lee las direcciones IP de un fichero.
-	-r 		Lee la dirección de red indicada como argumento y lista las direcciones de la red que están activas.
-	-o <FICHERO>	Escribe la salida a un fichero. Si no se indica, muestra el resultado por la salida estándar.
+echo -e ""$negrita"Uso:"$fin_formato" $0  [-a IP | -i FICHERO | -o [IP | FICHERO_ENTRADA] FICHERO_SALIDA]
+"$negrita"Descripción:"$fin_formato" Recibe un rango de direcciones IP y lista las que están activas y las que están en el DNS.
+"$negrita"Parámetros aceptados:"$fin_formato"
+	-a 		Lee la dirección IP indicada como argumento y comprueba si está activa y en la caché DNS. Esta opción acepta como parámetro una dirección IP o una dirección de red CIDR
+	-i <FICHERO>	Lee las direcciones IP de un fichero. Este fichero debe contener una dirección IP o una dirección de red CIDR por cada línea.
+	-o <FICHERO>	Escribe la salida a un fichero. Si el fichero no existe, se crea.
 	-h 		Muestra esta ayuda.
 	-v 		Muestra la versión.
+	
+"$negrita"Ejemplos de uso:"$fin_formato"
+
+Para ver las direcciones disponibles en la red 172.22.0.0/24 y cuáles de ellas están en el DNS:
+	$0 -a 172.22.0.0/24
+	
+Para leer las direcciones de un fichero y buscar cuáles están disponibles y cuáles en el DNS:
+	$0 -i direcciones.txt
+	
+Para guardar la salida del script en un fichero de texto:
+	$0 -o 172.22.0.0/24 FicheroDeSalida.txt
+	$0 -o direcciones.txt FicheroDeSalida.txt
+	
+Este script lee un argumento de la entrada estándar con la opción -a o uno o varios argumentos de un fichero con la opción -i. El formato del fichero de entrada debe ser una dirección IP o una dirección de red CIDR por cada línea. Por ejemplo:
+	\"172.22.0.1
+	172.22.0.14
+	172.22.0.168\"
+	
+	
 Este script se ejecuta en una subshell"
 }
 
@@ -275,11 +293,3 @@ if [ "$#" -eq 0 ]; then
 	mostrar_ayuda
 	exit 1
 fi
-
-
-
-
-	
-
-
-
