@@ -50,9 +50,9 @@ mostrar_ayuda() {
 echo -e ""$negrita"Uso:"$fin_formato" $0  [-a IP | -i FICHERO | -o [IP | FICHERO_ENTRADA] FICHERO_SALIDA]
 "$negrita"Descripción:"$fin_formato" Recibe un rango de direcciones IP y lista las que están activas y las que están en el DNS.
 "$negrita"Parámetros aceptados:"$fin_formato"
-	-a 		Lee la dirección IP indicada como argumento y comprueba si está activa y en la caché DNS. Esta opción acepta como parámetro una dirección IP o una dirección de red CIDR
-	-i <FICHERO>	Lee las direcciones IP de un fichero. Este fichero debe contener una dirección IP o una dirección de red CIDR por cada línea.
-	-o <FICHERO>	Escribe la salida a un fichero. Si el fichero no existe, se crea.
+	-a 		Lee la dirección IP o de red indicada como argumento y comprueba si está activa y en la caché DNS. Esta opción acepta como parámetro una dirección IP o una dirección de red CIDR
+	-i <FICHERO>	Lee las direcciones IP o de red de un fichero y comprueba si está activa y en la caché DNS. Este fichero debe contener una dirección IP o una dirección de red CIDR por cada línea.
+	-o <FICHERO>	Escribe la salida a un fichero. Si el fichero no existe, lo crea.
 	-h 		Muestra esta ayuda.
 	-v 		Muestra la versión.
 	
