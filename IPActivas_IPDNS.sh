@@ -74,7 +74,7 @@ Este script lee un argumento de la entrada estándar con la opción -a o uno o v
 	172.22.0.168\"
 	
 	
-Este script se ejecuta en una subshell"
+Este script se ejecuta en una subshell."
 }
 
 mostrar_version() {
