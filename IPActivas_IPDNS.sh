@@ -2,7 +2,7 @@
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
 #Descripción: Recibe un rango de direcciones IP y lista las que están activas 
 #y las que están en el DNS.
-#Versión: 1.41
+#Versión: 1.42
 #Fecha: 14-05-2024
 #Zona de depuración
         #Inicio de la zona de depuración con set -x (descomentar para activar)
@@ -78,7 +78,7 @@ Este script se ejecuta en una subshell."
 }
 
 mostrar_version() {
-	echo "$0 Versión: 1.41"
+	echo "$0 Versión: 1.42"
 	exit 0
 }
 
@@ -201,6 +201,7 @@ válida: $i"
 #Leer una dirección IP pasada como argumento
 leer_direccion () {
     i=$1
+    echo -e "Buscando direcciones disponibles"$parpadeo"_$fin_formato"
   #Ejecuta nmap y guarda la salida del comando en un fichero temporal
     nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
   # Leer el fichero temporal campo a campo usando un bucle while
