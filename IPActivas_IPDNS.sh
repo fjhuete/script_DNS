@@ -116,7 +116,7 @@ validar_nslookup() {
 
 #Comprobar si está instalado el paquete nmap
 nmap_instalado () {
-	echo -e "Comprobando si el paquete nmap está 
+	echo -e "Comprobando si el paquete nmap está \
 	instalado"$parpadeo"_$fin_formato"
 	local paquete="nmap"
 	if dpkg -l | grep -q "^ii\s*$paquete\s"; then
