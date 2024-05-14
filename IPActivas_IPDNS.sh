@@ -187,8 +187,6 @@ leer_direccion () {
      	echo "$ip: Disponible"
     else
       echo "$ip: No disponible"
-	  obtener_DNS
-	  nslookup "$ip $DNS" 
     fi
   done <contenido_tmp.txt
 }
@@ -224,6 +222,8 @@ leer_fichero() {
 				echo "$ip: Disponible"
 			else
 				echo "$ip: No disponible"
+				obtener_DNS
+	  			nslookup "$ip" "$DNS" 
 			fi
 		done <contenido_tmp.txt
 	done
