@@ -2,8 +2,8 @@
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
 #Descripción: Recibe un rango de direcciones IP y lista las que están activas 
 #y las que están en el DNS.
-#Versión: 1.0
-#Fecha:
+#Versión: 1.35
+#Fecha: 14-05-2024
 #Zona de depuración
         #Inicio de la zona de depuración con set -x (descomentar para activar)
 #set -x
@@ -279,12 +279,12 @@ escribir_fichero () {
 	#Comprueba si existe el fichero de entrada
 	if [ -f "$entrada" ]; then
 		#Si existe, lee del fichero de entrada y escribe en el fichero de salida
-		echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
+		echo -e "Buscando las direcciones disponibles"$parpadeo"_$fin_formato"
 		leer_fichero $entrada > $salida
 	else
 		#Si no existe, lee la dirección IP aportada como argumento y escribe 
 		#en el fichero de salida
-		echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
+		echo -e "Buscando las direcciones disponibles"$parpadeo"_$fin_formato"
 		leer_direccion $entrada > $salida
 	fi
 }
