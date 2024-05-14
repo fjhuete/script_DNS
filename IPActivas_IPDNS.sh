@@ -2,11 +2,11 @@
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
 #Descripción: Recibe un rango de direcciones IP y lista las que están activas 
 #y las que están en el DNS.
-#Versión: 1.37
+#Versión: 1.38
 #Fecha: 14-05-2024
 #Zona de depuración
         #Inicio de la zona de depuración con set -x (descomentar para activar)
-#set -x
+set -x
         #Advertencia de falta de variable (descomentar para activar)
  #set -u
 #Zona de declaración de variables
@@ -28,9 +28,9 @@ regexp_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(
 			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$"
 
 #Expresión regular para identificar redes
-regexp_red="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(
-			[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(
-			\/(3[0-2]|[1-2][0-9]|[0-9]))$"
+regexp_red="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(\
+[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\
+\/(3[0-2]|[1-2][0-9]|[0-9]))$"
 
 #Zona de declaración de funciones
 
@@ -78,7 +78,7 @@ Este script se ejecuta en una subshell."
 }
 
 mostrar_version() {
-	echo "$0 Versión: 1.37"
+	echo "$0 Versión: 1.38"
 	exit 0
 }
 
@@ -194,6 +194,7 @@ validar_IP () {
 	else
     echo -e "$rojo$negrita[ERROR]$fin_formato - La dirección IP no es \
 válida: $i"
+		exit 1
 	fi
 }
 
@@ -213,10 +214,10 @@ leer_direccion () {
             echo "$ip: No disponible"
             obtener_DNS
                 if nslookup "$ip" "$DNS" | grep "^\*\*" &>/dev/null; then
-                    echo "No hay resolución para este nombre"
+                  echo "$ip: No disponible. No hay resolución para este nombre."
                 else
-                    echo "Dominios $ip:"
-                    nslookup "$ip" "$DNS" | echo -e "$(awk '{ print $4 }')"
+                  echo "$ip: No disponible. Dominios:"
+                  nslookup "$ip" "$DNS" | echo -e "$(awk '{ print $4 }')"
                 fi
         fi
         done <contenido_tmp.txt
