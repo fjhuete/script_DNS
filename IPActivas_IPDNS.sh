@@ -1,6 +1,7 @@
 #! /usr/bin/env sh
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
-#Descripción: Recibe un rango de direcciones IP y lista las que están activas y las que están en el DNS.
+#Descripción: Recibe un rango de direcciones IP y lista las que están activas 
+#y las que están en el DNS.
 #Versión: 1.0
 #Fecha:
 #Zona de depuración
@@ -13,25 +14,10 @@
 #Color de texto
 rojo="\e[1;31m"
 verde="\e[1;32m"
-amarillo="\e[1;33m"
-azul="\e[1;34m"
-morado="\e[1;35m"
-cyan="\e[1;36m"
-
-#Color de fondo
-fondogris="\e[1;40m"
-fondoverde="\e[1;42m"
-fondoamarillo="\e[1;44m"
-fondoazul="\e[1;44m"
-fondomorado="\e[1;45m"
-fondocyan="\e[1;46m"
 
 #Formato
 negrita="\e[1m"
-subrayado="\e[4m"
 parpadeo="\e[1;5m"
-invertido="\e[1;7m"
-
 
 fin_formato="\e[0m"
 
@@ -42,33 +28,47 @@ regexp_ip="^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(
 			25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$"
 
 #Expresión regular para identificar redes
-regexp_red="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$"
+regexp_red="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(
+			[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(
+			\/(3[0-2]|[1-2][0-9]|[0-9]))$"
 
 #Zona de declaración de funciones
 
 mostrar_ayuda() {
-echo -e ""$negrita"Uso:"$fin_formato" $0  [-a IP | -i FICHERO | -o [IP | FICHERO_ENTRADA] FICHERO_SALIDA]
-"$negrita"Descripción:"$fin_formato" Recibe un rango de direcciones IP y lista las que están activas y las que están en el DNS.
+echo -e ""$negrita"Uso:"$fin_formato" $0  [-a IP | -i FICHERO | -o [IP | \
+FICHERO_ENTRADA] FICHERO_SALIDA]
+"$negrita"Descripción:"$fin_formato" Recibe un rango de direcciones IP y \
+lista las que están activas y las que están en el DNS.
 "$negrita"Parámetros aceptados:"$fin_formato"
-	-a 		Lee la dirección IP o de red indicada como argumento y comprueba si está activa y en la caché DNS. Esta opción acepta como parámetro una dirección IP o una dirección de red CIDR
-	-i <FICHERO>	Lee las direcciones IP o de red de un fichero y comprueba si está activa y en la caché DNS. Este fichero debe contener una dirección IP o una dirección de red CIDR por cada línea.
-	-o <FICHERO>	Escribe la salida a un fichero. Si el fichero no existe, lo crea.
+	-a 		Lee la dirección IP o de red indicada como argumento y comprueba si \
+	está activa y en la caché DNS. Esta opción acepta como parámetro una \
+	dirección IP o una dirección de red CIDR.
+	-i <FICHERO>	Lee las direcciones IP o de red de un fichero y comprueba si \
+	está activa y en la caché DNS. Este fichero debe contener una dirección IP \
+	o una dirección de red CIDR por cada línea.
+	-o <FICHERO>	Escribe la salida a un fichero. Si el fichero no existe, \
+	lo crea.
 	-h 		Muestra esta ayuda.
 	-v 		Muestra la versión.
 	
 "$negrita"Ejemplos de uso:"$fin_formato"
 
-Para ver las direcciones disponibles en la red 172.22.0.0/24 y cuáles de ellas están en el DNS:
+Para ver las direcciones disponibles en la red 172.22.0.0/24 y cuáles de ellas \
+están en el DNS:
 	$0 -a 172.22.0.0/24
 	
-Para leer las direcciones de un fichero y buscar cuáles están disponibles y cuáles en el DNS:
+Para leer las direcciones de un fichero y buscar cuáles están disponibles y \
+cuáles en el DNS:
 	$0 -i direcciones.txt
 	
 Para guardar la salida del script en un fichero de texto:
 	$0 -o 172.22.0.0/24 FicheroDeSalida.txt
 	$0 -o direcciones.txt FicheroDeSalida.txt
 	
-Este script lee un argumento de la entrada estándar con la opción -a o uno o varios argumentos de un fichero con la opción -i. El formato del fichero de entrada debe ser una dirección IP o una dirección de red CIDR por cada línea. Por ejemplo:
+Este script lee un argumento de la entrada estándar con la opción -a o uno o \
+varios argumentos de un fichero con la opción -i. El formato del fichero de \
+entrada debe ser una dirección IP o una dirección de red CIDR por cada línea.
+"$negrita"Ejemplo de fichero:"$fin_formato"
 	\"172.22.0.1
 	172.22.0.14
 	172.22.0.168\"
@@ -85,9 +85,10 @@ mostrar_version() {
 obtener_DNS(){
 	DNS=$(cat /etc/resolv.conf | grep -m 1 '^nameserver' | awk '{print $2}')
 	if [[ $DNS =~ $regexp_ip ]]; then
-		echo "[OK] IP DNS obtenida: $DNS"
+		return 0
 	else
-		echo "[ERROR] Error al obtener el DNS de /etc/resolv.conf"
+		echo "$rojo$negrita[ERROR]$fin_formato - No es posible obtener el DNS de \
+		/etc/resolv.conf"
 		exit 1
 	fi
 }
@@ -102,9 +103,10 @@ instalar_nslookup(){
 
 validar_nslookup() {
 	if command -v nslookup &>/dev/null; then
-		echo "[OK] La herramienta nslookup está instalada."
+		echo -e "$verde[OK]$fin_formato La herramienta nslookup está instalada."
 	else
-		echo "[ERROR] La herramienta nslookup no está instalada."
+		echo -e "$rojo$negrita[ERROR]$fin_formato La herramienta nslookup no está \
+		instalada."
 		comprobar_root
 		instalar_nslookup
 	fi
@@ -114,7 +116,8 @@ validar_nslookup() {
 
 #Comprobar si está instalado el paquete nmap
 nmap_instalado () {
-	echo -e "Comprobando si el paquete nmap está instalado$parpadeo.$fin_formato"
+	echo -e "Comprobando si el paquete nmap está 
+	instalado"$parpadeo"_$fin_formato"
 	local paquete="nmap"
 	if dpkg -l | grep -q "^ii\s*$paquete\s"; then
 		return 0
@@ -126,7 +129,8 @@ nmap_instalado () {
 
 #conexion con debian.org para instalar nmap
 ping_debian () {
-	echo 'Comprobando conexión a los repositorios Debian.'
+	echo -e "Comprobando conexión a los repositorios \
+	Debian"$parpadeo"_$fin_formato"
 	if ping -c 1 -W 1 151.101.130.132 &> /dev/null; then
 		echo 'Conexión exitosa a los repositorios.'
 		return 0
@@ -140,7 +144,8 @@ ping_debian () {
 		echo 'Conexión exitosa a los repositorios.'
 		return 0
 	else
-		echo -e "$rojo$negrita[ERROR]$fin_formato - No tienes conexión a los repositorios de Debian."
+		echo -e "$rojo$negrita[ERROR]$fin_formato - No tienes conexión a los \
+		repositorios de Debian."
 		exit 1
 	fi
 }
@@ -158,7 +163,7 @@ comprobar_root () {
 
 #instalar nmap
 instalar_nmap () {
-	echo 'Instalando nmap.'
+	echo -e "Instalando nmap"$parpadeo"_$fin_formato"
 	apt update && apt upgrade -y
 	apt install -y nmap
 }
@@ -187,29 +192,34 @@ validar_IP () {
 	if [[ $i =~ $regexp_ip ]] || [[ $i =~ $regexp_red ]]; then
 		return 0
 	else
-    echo -e "$rojo$negrita[ERROR]$fin_formato - La dirección IP no es válida: $i"
+    echo -e "$rojo$negrita[ERROR]$fin_formato - La dirección IP no es \
+    válida: $i"
 	fi
 }
 
 #Leer una dirección IP pasada como argumento
 leer_direccion () {
-	i=$1
-	validar_IP $i
+    i=$1
   #Ejecuta nmap y guarda la salida del comando en un fichero temporal
-  nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
+    nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
   # Leer el fichero temporal campo a campo usando un bucle while
-  while IFS= read -r line; do
+    while IFS= read -r line; do
    # Extraer la dirección IP de la línea
-    ip=$(echo "$line" | awk '{print $5}')
+        ip=$(echo "$line" | awk '{print $5}')
     # Comprobar si la línea contiene "host down"
-    if [[ "$line" == *"host down"* ]]; then
-     	echo "$ip: Disponible"
-    else
-      echo "$ip: No disponible"
-	obtener_DNS
-	nslookup "$ip" "$DNS"
-    fi
-  done <contenido_tmp.txt
+        if [[ "$line" == *"host down"* ]]; then
+            echo "$ip: Disponible"
+        else
+            echo "$ip: No disponible"
+            obtener_DNS
+                if nslookup "$ip" "$DNS" | grep "^\*\*" &>/dev/null; then
+                    echo "No hay resolución para este nombre"
+                else
+                    echo "Dominios $ip:"
+                    nslookup "$ip" "$DNS" | echo -e "$(awk '{ print $4 }')"
+                fi
+        fi
+        done <contenido_tmp.txt
 }
 
 
@@ -225,32 +235,37 @@ validar_fichero() {
 
 # Leer del fichero
 leer_fichero() {
-	fichero=$1
-  validar_fichero $fichero
-	echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
-	touch contenido_tmp.txt
-	#Lee cada línea del fichero
-	for i in $(cat "$fichero"); do
-		validar_IP $i
-		#Ejecuta nmap y guarda la salida del comando en un fichero temporal
-		nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
-		# Leer el fichero temporal campo a campo usando un bucle while
-		while IFS= read -r line; do
-			# Extraer la dirección IP de la línea
-			ip=$(echo "$line" | awk '{print $5}')
-			# Comprobar si la línea contiene "host down"
-			if [[ "$line" == *"host down"* ]]; then
-				echo "$ip: Disponible"
-			else
-				echo "$ip: No disponible"
-				obtener_DNS
-	  			nslookup "$ip" "$DNS" 
-			fi
-		done <contenido_tmp.txt
-	done
-			# Eliminar el archivo temporal
-			rm contenido_tmp.txt
+    fichero=$1
+	validar_fichero $fichero
+    echo -e "Buscando las direcciones disponibles"$parpadeo"_$fin_formato"
+    touch contenido_tmp.txt
+    #Lee cada línea del fichero
+    for i in $(cat "$fichero"); do
+        validar_IP $i
+        #Ejecuta nmap y guarda la salida del comando en un fichero temporal
+        nmap -sn -v "$i" | grep "Nmap scan report for" &>contenido_tmp.txt
+        # Leer el fichero temporal campo a campo usando un bucle while
+        while IFS= read -r line; do
+        # Extraer la dirección IP de la línea
+            ip=$(echo "$line" | awk '{print $5}')
+            # Comprobar si la línea contiene "host down"
+            if [[ "$line" == *"host down"* ]]; then
+                echo "$ip: Disponible"
+            else
+                obtener_DNS
+                if nslookup "$ip" "$DNS" | grep "^\*\*" &>/dev/null; then
+	                echo "$ip: No disponible. No hay resolución para este nombre."
+                else
+                    echo "$ip: No disponible. Dominios:"
+                    nslookup "$ip" "$DNS" | echo -e "$(awk '{ print $4 }')"
+                fi
+            fi
+        done <contenido_tmp.txt
+    done
+    # Eliminar el archivo temporal
+    rm contenido_tmp.txt
 }
+
 
 #Escribir a fichero
 escribir_fichero () {
@@ -267,7 +282,8 @@ escribir_fichero () {
 		echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
 		leer_fichero $entrada > $salida
 	else
-		#Si no existe, lee la dirección IP aportada como argumento y escribe en el fichero de salida
+		#Si no existe, lee la dirección IP aportada como argumento y escribe 
+		#en el fichero de salida
 		echo -e "Buscando las direcciones disponibles$parpaedo.$finformato"
 		leer_direccion $entrada > $salida
 	fi
@@ -278,7 +294,8 @@ escribir_fichero () {
 #Opciones
 while getopts "aiohv" opcion; do
 	case $opcion in
-		a) obtener_DNS;validar_nslookup;validar_nmap; leer_direccion $2; exit 0 ;;
+		a) validar_IP $2; obtener_DNS; validar_nslookup; validar_nmap; 
+		leer_direccion $2; exit 0 ;;
 		i) obtener_DNS; validar_nslookup; validar_nmap; leer_fichero $2; exit 0 ;;
 		o) validar_nmap; escribir_fichero $@; exit 0 ;;
 		h) mostrar_ayuda; exit 0;;
@@ -289,7 +306,8 @@ done
 
 #Validar si se aportan argumentos al script
 if [ "$#" -eq 0 ]; then
-	echo -e "$rojo$negrita[ERROR]$fin_formato - Este comando requiere, al menos, un argumento."
+	echo -e "$rojo$negrita[ERROR]$fin_formato - Este comando requiere, al menos, \
+	un argumento."
 	mostrar_ayuda
 	exit 1
 fi
