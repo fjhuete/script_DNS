@@ -2,7 +2,7 @@
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
 #Descripción: Recibe un rango de direcciones IP y lista las que están activas 
 #y las que están en el DNS.
-#Versión: 1.35
+#Versión: 1.37
 #Fecha: 14-05-2024
 #Zona de depuración
         #Inicio de la zona de depuración con set -x (descomentar para activar)
@@ -41,11 +41,11 @@ FICHERO_ENTRADA] FICHERO_SALIDA]
 lista las que están activas y las que están en el DNS.
 "$negrita"Parámetros aceptados:"$fin_formato"
 	-a 		Lee la dirección IP o de red indicada como argumento y comprueba si \
-	está activa y en la caché DNS. Esta opción acepta como parámetro una \
-	dirección IP o una dirección de red CIDR.
+está activa y en la caché DNS. Esta opción acepta como parámetro una \
+dirección IP o una dirección de red CIDR.
 	-i <FICHERO>	Lee las direcciones IP o de red de un fichero y comprueba si \
-	está activa y en la caché DNS. Este fichero debe contener una dirección IP \
-	o una dirección de red CIDR por cada línea.
+está activa y en la caché DNS. Este fichero debe contener una dirección IP \
+o una dirección de red CIDR por cada línea.
 	-o <FICHERO>	Escribe la salida a un fichero. Si el fichero no existe, \
 	lo crea.
 	-h 		Muestra esta ayuda.
@@ -78,7 +78,7 @@ Este script se ejecuta en una subshell."
 }
 
 mostrar_version() {
-	echo "$0 Versión: 1.0"
+	echo "$0 Versión: 1.37"
 	exit 0
 }
 
@@ -88,7 +88,7 @@ obtener_DNS(){
 		return 0
 	else
 		echo "$rojo$negrita[ERROR]$fin_formato - No es posible obtener el DNS de \
-		/etc/resolv.conf"
+/etc/resolv.conf"
 		exit 1
 	fi
 }
@@ -106,7 +106,7 @@ validar_nslookup() {
 		echo -e "$verde[OK]$fin_formato La herramienta nslookup está instalada."
 	else
 		echo -e "$rojo$negrita[ERROR]$fin_formato La herramienta nslookup no está \
-		instalada."
+instalada."
 		comprobar_root
 		instalar_nslookup
 	fi
@@ -117,7 +117,7 @@ validar_nslookup() {
 #Comprobar si está instalado el paquete nmap
 nmap_instalado () {
 	echo -e "Comprobando si el paquete nmap está \
-	instalado"$parpadeo"_$fin_formato"
+instalado"$parpadeo"_$fin_formato"
 	local paquete="nmap"
 	if dpkg -l | grep -q "^ii\s*$paquete\s"; then
 		return 0
@@ -130,7 +130,7 @@ nmap_instalado () {
 #conexion con debian.org para instalar nmap
 ping_debian () {
 	echo -e "Comprobando conexión a los repositorios \
-	Debian"$parpadeo"_$fin_formato"
+Debian"$parpadeo"_$fin_formato"
 	if ping -c 1 -W 1 151.101.130.132 &> /dev/null; then
 		echo 'Conexión exitosa a los repositorios.'
 		return 0
@@ -145,7 +145,7 @@ ping_debian () {
 		return 0
 	else
 		echo -e "$rojo$negrita[ERROR]$fin_formato - No tienes conexión a los \
-		repositorios de Debian."
+repositorios de Debian."
 		exit 1
 	fi
 }
@@ -193,7 +193,7 @@ validar_IP () {
 		return 0
 	else
     echo -e "$rojo$negrita[ERROR]$fin_formato - La dirección IP no es \
-    válida: $i"
+válida: $i"
 	fi
 }
 
@@ -307,7 +307,7 @@ done
 #Validar si se aportan argumentos al script
 if [ "$#" -eq 0 ]; then
 	echo -e "$rojo$negrita[ERROR]$fin_formato - Este comando requiere, al menos, \
-	un argumento."
+un argumento."
 	mostrar_ayuda
 	exit 1
 fi
