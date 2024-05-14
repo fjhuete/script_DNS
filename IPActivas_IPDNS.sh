@@ -76,6 +76,7 @@ obtener_DNS(){
 
 
 instalar_nslookup(){
+	comprobar_root
 	echo 'Instalando nslookup.'
 	apt update && apt upgrade -y
 	apt install -y dnsutils
@@ -259,7 +260,7 @@ escribir_fichero () {
 #Opciones
 while getopts "aiohv" opcion; do
 	case $opcion in
-		a) validar_nmap; leer_direccion $2; exit 0 ;;
+		a) obtener_DNS;validar_nslookup;validar_nmap; leer_direccion $2; exit 0 ;;
 		i) obtener_DNS; validar_nslookup; validar_nmap; leer_fichero $2; exit 0 ;;
 		o) validar_nmap; escribir_fichero $@; exit 0 ;;
 		h) mostrar_ayuda; exit 0;;
