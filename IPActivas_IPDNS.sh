@@ -2,7 +2,7 @@
 #Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
 #Descripción: Recibe un rango de direcciones IP y lista las que están activas 
 #y las que están en el DNS.
-#Versión: 1.40
+#Versión: 1.41
 #Fecha: 14-05-2024
 #Zona de depuración
         #Inicio de la zona de depuración con set -x (descomentar para activar)
@@ -78,7 +78,7 @@ Este script se ejecuta en una subshell."
 }
 
 mostrar_version() {
-	echo "$0 Versión: 1.40"
+	echo "$0 Versión: 1.41"
 	exit 0
 }
 
@@ -211,7 +211,6 @@ leer_direccion () {
         if [[ "$line" == *"host down"* ]]; then
             echo "$ip: Disponible"
         else
-            echo "$ip: No disponible"
             obtener_DNS
                 if nslookup "$ip" "$DNS" | grep "^\*\*" &>/dev/null; then
                   echo "$ip: No disponible. No hay resolución para este nombre."
