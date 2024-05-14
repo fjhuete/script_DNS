@@ -64,6 +64,35 @@ mostrar_version() {
 	exit 0
 }
 
+obtener_DNS(){
+	DNS=$(cat /etc/resolv.conf | grep -m 1 '^nameserver' | awk '{print $2}')
+	if [[ $DNS =~ $regexp_ip ]]; then
+		echo "[OK] IP DNS obtenida: $DNS"
+	else
+		echo "[ERROR] Error al obtener el DNS de /etc/resolv.conf"
+		exit 1
+	fi
+}
+
+
+instalar_nslookup(){
+	echo 'Instalando nslookup.'
+	apt update && apt upgrade -y
+	apt install -y dnsutils
+}
+
+validar_nslookup() {
+	if command -v nslookup &>/dev/null; then
+		echo "[OK] La herramienta nslookup está instalada."
+	else
+		echo "[ERROR] La herramienta nslookup no está instalada."
+		comprobar_root
+		instalar_nslookup
+	fi
+	
+}
+
+
 #Comprobar si está instalado el paquete nmap
 nmap_instalado () {
 	echo -e "Comprobando si el paquete nmap está instalado$parpadeo.$fin_formato"
@@ -158,6 +187,8 @@ leer_direccion () {
      	echo "$ip: Disponible"
     else
       echo "$ip: No disponible"
+	  obtener_DNS
+	  nslookup "$ip $DNS" 
     fi
   done <contenido_tmp.txt
 }
@@ -170,6 +201,7 @@ validar_fichero() {
 		exit 1
 	else
 		return 0
+	fi
 }
 
 # Leer del fichero
@@ -226,7 +258,7 @@ escribir_fichero () {
 while getopts "aiohv" opcion; do
 	case $opcion in
 		a) validar_nmap; leer_direccion $2; exit 0 ;;
-		i) validar_nmap; leer_fichero $2; exit 0 ;;
+		i) obtener_DNS; validar_nslookup; validar_nmap; leer_fichero $2; exit 0 ;;
 		o) validar_nmap; escribir_fichero $@; exit 0 ;;
 		h) mostrar_ayuda; exit 0;;
 		v) mostrar_version; exit 0 ;;
