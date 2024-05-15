@@ -1,8 +1,8 @@
 #! /usr/bin/env sh
-#Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Jurado
+#Autores: Francisco Javier Huete Mejías, Manuel Rodríguez Curado
 #Descripción: Recibe un rango de direcciones IP y lista las que están activas 
 #y las que están en el DNS.
-#Versión: 1.42
+#Versión: 1.43
 #Fecha: 14-05-2024
 #Zona de depuración
         #Inicio de la zona de depuración con set -x (descomentar para activar)
