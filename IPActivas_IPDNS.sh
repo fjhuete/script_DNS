@@ -95,6 +95,7 @@ obtener_DNS(){
 
 
 instalar_nslookup(){
+	ping_debian
 	comprobar_root
 	echo 'Instalando nslookup.'
 	apt update && apt upgrade -y
@@ -107,7 +108,6 @@ validar_nslookup() {
 	else
 		echo -e "$rojo$negrita[ERROR]$fin_formato La herramienta nslookup no está \
 instalada."
-		comprobar_root
 		instalar_nslookup
 	fi
 	
